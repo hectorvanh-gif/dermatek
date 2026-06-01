@@ -20,6 +20,10 @@ export const config = {
 };
 
 export default async function vercelHandler(request: Request): Promise<Response> {
+  const host = request.headers.get("host") ?? "localhost";
+  const proto = request.headers.get("x-forwarded-proto") ?? "https";
+  const url = new URL(request.url, `${proto}://${host}`);
+  const fullRequest = new Request(url.toString(), request);
   return (handler as { fetch: (req: Request, env: unknown, ctx: unknown) => Promise<Response> | Response })
-    .fetch(request, {}, {});
+    .fetch(fullRequest, {}, {});
 }
