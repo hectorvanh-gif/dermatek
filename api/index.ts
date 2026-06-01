@@ -19,9 +19,15 @@ export const config = {
   supportsResponseStreaming: true,
 };
 
+function getHeader(request: Request, name: string): string | null {
+  const h = request.headers;
+  if (typeof h.get === "function") return h.get(name);
+  return (h as unknown as Record<string, string>)[name] ?? null;
+}
+
 export default async function vercelHandler(request: Request): Promise<Response> {
-  const host = request.headers.get("host") ?? "localhost";
-  const proto = request.headers.get("x-forwarded-proto") ?? "https";
+  const host = getHeader(request, "host") ?? "localhost";
+  const proto = getHeader(request, "x-forwarded-proto") ?? "https";
   const url = new URL(request.url, `${proto}://${host}`);
   const fullRequest = new Request(url.toString(), request);
   return (handler as { fetch: (req: Request, env: unknown, ctx: unknown) => Promise<Response> | Response })
